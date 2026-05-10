@@ -1,0 +1,26 @@
+# Nama Ekstensi dan Info Dasar
+name: TamodaWortiseAds
+description: Ekstensi Wortise Ads (App Open, Banner, Interstitial, Rewarded)
+version: 1
+author: Goes Pro
+
+# Pengaturan Kompilasi
+build:
+  release:
+    optimize: true
+
+# Mesin Java yang Dipakai
+java:
+  source: 1.8
+  target: 1.8
+
+# MANTRA PEMANGGIL MESIN WORTISE (Otomatis Download)
+deps:
+  - 'com.wortise:android-sdk:1.6.0'
+  - 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+
+# PATCH KEAMANAN & LAYAR (Wajib untuk Iklan Video)
+android-manifest:
+  application:
+    hardwareAccelerated: true
+    usesCleartextTraffic: true
