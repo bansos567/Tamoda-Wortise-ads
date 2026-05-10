@@ -95,7 +95,10 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
     @SimpleEvent public void RewardedLoaded() { EventDispatcher.dispatchEvent(this, "RewardedLoaded"); }
     @SimpleEvent public void RewardedFailed(String errorMessage) { EventDispatcher.dispatchEvent(this, "RewardedFailed", errorMessage); }
     @SimpleEvent public void RewardedClosed() { EventDispatcher.dispatchEvent(this, "RewardedClosed"); }
-    @SimpleEventpublic void RewardedEarned(int amount, String rewardType) { 
+    
+    // TYPO SUDAH DI-FIX DISINI BOS
+    @SimpleEvent 
+    public void RewardedEarned(int amount, String rewardType) { 
         EventDispatcher.dispatchEvent(this, "RewardedEarned", amount, rewardType); 
     }
 
