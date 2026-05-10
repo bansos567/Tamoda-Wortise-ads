@@ -1,28 +1,20 @@
-name: TamodaWortiseAds
-description: Ekstensi Wortise Ads (App Open, Banner, Interstitial, Rewarded)
-version: '1'
-author: Goes Pro
-
-# TAMBAHKAN INI: Alamat gudang SDK
-repositories:
-  - google()
-  - mavenCentral()
-  - url: https://maven.wortise.com/artifactory/public
-
-dependencies:
-  - com.wortise:android-sdk:1.6.0
-  - com.google.android.gms:play-services-ads-identifier:18.0.1
-
-build:
-  release:
-    optimize: true
-
-java:
-  source: '1.8'
-  target: '1.8'
-
-manifest:
-  application:
-    attributes:
-      android:hardwareAccelerated: "true"
-      android:usesCleartextTraffic: "true"
+name: Ant Build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build Extension
+        run: ant extensions
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: TamodaWortise
+          path: out/*.aix
