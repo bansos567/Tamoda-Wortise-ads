@@ -30,8 +30,7 @@ import com.wortise.ads.appopen.AppOpenAd;
 public class TamodaWortiseAds extends AndroidNonvisibleComponent {
 
     private final Activity activity;
-    private ComponentContainer container;
-    
+
     private InterstitialAd interstitialAd;
     private RewardedAd rewardedAd;
     private AppOpenAd appOpenAd;
@@ -39,17 +38,19 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
 
     public TamodaWortiseAds(ComponentContainer container) {
         super(container.$form());
-        this.container = container;
         this.activity = (Activity) container.$context();
     }
 
     // ==========================================
-    // 1. INISIALISASI MESIN (Panggil di Screen Initialize)
+    // 1. INISIALISASI MESIN (Tanpa Lambda agar Lolos Java 7)
     // ==========================================
     @SimpleFunction(description = "Nyalakan mesin Wortise. Masukkan App ID dari dashboard.")
     public void InitializeSdk(String appId) {
-        WortiseSdk.initialize(activity, appId, () -> {
-            SdkInitialized();
+        WortiseSdk.initialize(activity, appId, new WortiseSdk.OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete() {
+                SdkInitialized();
+            }
         });
     }
 
@@ -59,9 +60,9 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
     }
 
     // ==========================================
-    // 2. REWARDED VIDEO (Untuk Gacha / Toples)
+    // 2. REWARDED VIDEO
     // ==========================================
-    @SimpleFunction(description = "Load Video ke memori HP secara diam-diam.")
+    @SimpleFunction(description = "Load Video ke memori HP.")
     public void LoadRewarded(String adUnitId) {
         rewardedAd = new RewardedAd(activity, adUnitId);
         rewardedAd.setListener(new RewardedAd.Listener() {
@@ -71,7 +72,6 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
             public void onRewardedFailedToLoad(RewardedAd ad, com.wortise.ads.AdError error) { RewardedFailed(error.getMessage()); }
             @Override
             public void onRewardedCompleted(RewardedAd ad, com.wortise.ads.rewarded.Reward reward) { 
-                // INI NYAWANYA! User selesai nonton
                 RewardedEarned(reward.getAmount(), reward.getLabel() != null ? reward.getLabel() : "poin"); 
             }
             @Override
@@ -88,21 +88,19 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
         if (rewardedAd != null && rewardedAd.isAvailable()) {
             rewardedAd.show();
         } else {
-            RewardedFailed("Video belum di-load atau No Fill.");
+            RewardedFailed("Video belum ready.");
         }
     }
 
     @SimpleEvent public void RewardedLoaded() { EventDispatcher.dispatchEvent(this, "RewardedLoaded"); }
     @SimpleEvent public void RewardedFailed(String errorMessage) { EventDispatcher.dispatchEvent(this, "RewardedFailed", errorMessage); }
     @SimpleEvent public void RewardedClosed() { EventDispatcher.dispatchEvent(this, "RewardedClosed"); }
-    @SimpleEvent(description = "Video selesai! Kirim poin ke WebView / Firebase di blok ini.")
-    public void RewardedEarned(int amount, String rewardType) { 
+    @SimpleEventpublic void RewardedEarned(int amount, String rewardType) { 
         EventDispatcher.dispatchEvent(this, "RewardedEarned", amount, rewardType); 
     }
 
-
     // ==========================================
-    // 3. INTERSTITIAL (Iklan Layar Penuh Biasa)
+    // 3. INTERSTITIAL
     // ==========================================
     @SimpleFunction(description = "Load iklan Interstitial.")
     public void LoadInterstitial(String adUnitId) {
@@ -134,11 +132,10 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
     @SimpleEvent public void InterstitialFailed(String errorMessage) { EventDispatcher.dispatchEvent(this, "InterstitialFailed", errorMessage); }
     @SimpleEvent public void InterstitialClosed() { EventDispatcher.dispatchEvent(this, "InterstitialClosed"); }
 
-
     // ==========================================
-    // 4. APP OPEN (Iklan saat user baru buka / kembali ke aplikasi)
+    // 4. APP OPEN
     // ==========================================
-    @SimpleFunction(description = "Load dan otomatis tampilkan iklan saat aplikasi dibuka.")
+    @SimpleFunction(description = "Load dan tampilkan App Open.")
     public void ShowAppOpen(String adUnitId) {
         appOpenAd = new AppOpenAd(activity, adUnitId);
         appOpenAd.setListener(new AppOpenAd.Listener() {
@@ -162,20 +159,19 @@ public class TamodaWortiseAds extends AndroidNonvisibleComponent {
     @SimpleEvent public void AppOpenFailed(String errorMessage) { EventDispatcher.dispatchEvent(this, "AppOpenFailed", errorMessage); }
     @SimpleEvent public void AppOpenClosed() { EventDispatcher.dispatchEvent(this, "AppOpenClosed"); }
 
-
     // ==========================================
-    // 5. BANNER (Iklan Tempel Bawah/Atas)
+    // 5. BANNER
     // ==========================================
     @SimpleFunction(description = "Pasang banner di Horizontal / Vertical Arrangement.")
     public void ShowBanner(String adUnitId, AndroidViewComponent containerLayout) {
         View view = containerLayout.getView();
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
-            viewGroup.removeAllViews(); // Bersihkan isi arrangement sebelum dipasang
+            viewGroup.removeAllViews();
             
             bannerAd = new BannerAd(activity);
             bannerAd.setAdUnitId(adUnitId);
-            bannerAd.setAdSize(com.wortise.ads.banner.AdSize.HEIGHT_50); // Ukuran standar banner
+            bannerAd.setAdSize(com.wortise.ads.banner.AdSize.HEIGHT_50);
             
             bannerAd.setListener(new BannerAd.Listener() {
                 @Override
